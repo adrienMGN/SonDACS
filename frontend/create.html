@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Créer un sondage - SonDACS</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 600px; 
+      margin: 50px auto; 
+      padding: 20px; 
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    
+    .option-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    
+    .option-container input {
+      flex: 1;
+    }
+    
+    .remove-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      min-width: 80px;
+    }
+    
+    .remove-btn:hover {
+      background: #c82333;
+    }
+    
+    .add-option-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+    
+    .add-option-btn:hover {
+      background: #218838;
+    }
+    
+    .create-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    
+    .create-btn:hover {
+      background: #0056b3;
+    }
+    
+    .nav-btn {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    
+    .nav-btn:hover {
+      background: #545b62;
+    }
+  </style>
+</head>
+<body>
+  <button class="nav-btn" onclick="window.location.href='index.html'">🏠 Retour à l'accueil</button>
+  
+  <h1>Créer un nouveau sondage</h1>
+  
+  <form id="pollForm">
+    <div class="form-group">
+      <label for="question">Question du sondage :</label>
+      <input type="text" id="question" name="question" placeholder="Entrez votre question" required>
+    </div>
+    
+    <div class="form-group">
+      <label>Options de réponse :</label>
+      <div id="options-container">
+        <div class="option-container">
+          <input type="text" name="option" placeholder="Option 1" required>
+          <button type="button" class="remove-btn" onclick="removeOption(this)" disabled>Supprimer</button>
+        </div>
+        <div class="option-container">
+          <input type="text" name="option" placeholder="Option 2" required>
+          <button type="button" class="remove-btn" onclick="removeOption(this)" disabled>Supprimer</button>
+        </div>
+      </div>
+      
+      <button type="button" class="add-option-btn" onclick="addOption()">+ Ajouter une option</button>
+    </div>
+    
+    <button type="submit" class="create-btn">Créer le sondage</button>
+  </form>
+
+<script>
+let optionCount = 2;
+
+function addOption() {
+  optionCount++;
+  const container = document.getElementById('options-container');
+  
+  const optionDiv = document.createElement('div');
+  optionDiv.className = 'option-container';
+  optionDiv.innerHTML = `
+    <input type="text" name="option" placeholder="Option ${optionCount}" required>
+    <button type="button" class="remove-btn" onclick="removeOption(this)">Supprimer</button>
+  `;
+  
+  container.appendChild(optionDiv);
+  updateRemoveButtons();
+}
+
+function removeOption(button) {
+  const container = document.getElementById('options-container');
+  
+  // Empêcher la suppression si il y a moins de 3 options
+  if (container.children.length > 2) {
+    button.parentElement.remove();
+    updatePlaceholders();
+    updateRemoveButtons();
+  }
+}
+
+function updatePlaceholders() {
+  const containers = document.querySelectorAll('#options-container .option-container');
+  containers.forEach((container, index) => {
+    const input = container.querySelector('input');
+    input.placeholder = `Option ${index + 1}`;
+  });
+}
+
+function updateRemoveButtons() {
+  const removeButtons = document.querySelectorAll('.remove-btn');
+  const container = document.getElementById('options-container');
+  
+  // Désactiver les boutons de suppression si il y a seulement 2 options
+  removeButtons.forEach(button => {
+    if (container.children.length <= 2) {
+      button.disabled = true;
+      button.style.opacity = '0.5';
+      button.style.cursor = 'not-allowed';
+    } else {
+      button.disabled = false;
+      button.style.opacity = '1';
+      button.style.cursor = 'pointer';
+    }
+  });
+}
+
+document.getElementById('pollForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  const question = data.get("question");
+  const options = [...data.getAll("option")].filter(opt => opt.trim());
+  
+  // Vérifier qu'il y a au moins 2 options
+  if (options.length < 2) {
+    alert('Veuillez ajouter au moins 2 options pour votre sondage.');
+    return;
+  }
+  
+  try {
+    const res = await fetch('http://localhost:4000/api/polls', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, options })
+    });
+    
+    if (!res.ok) {
+      throw new Error('Erreur lors de la création du sondage');
+    }
+    
+    const json = await res.json();
+    window.location.href = `vote.html?id=${json.id}`;
+  } catch (error) {
+    alert('Erreur lors de la création du sondage. Veuillez réessayer.');
+    console.error('Erreur:', error);
+  }
+};
+
+// Initialiser l'état des boutons au chargement
+document.addEventListener('DOMContentLoaded', updateRemoveButtons);
+</script>
+</body>
+</html>
