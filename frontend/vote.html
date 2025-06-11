@@ -10,6 +10,59 @@
     .secondary-btn { background: #6c757d; color: white; border: none; border-radius: 5px; }
     .copy-btn { background: #28a745; color: white; border: none; border-radius: 5px; }
     .nav-buttons { margin-bottom: 20px; }
+    .vote-container { margin: 20px 0; }
+    .option-item { 
+      display: flex; 
+      align-items: center; 
+      margin: 10px 0; 
+      padding: 15px; 
+      border: 1px solid #ddd; 
+      border-radius: 5px; 
+      background: #f8f9fa;
+    }
+    .option-item input[type="checkbox"], .option-item input[type="radio"] {
+      margin-right: 10px;
+      transform: scale(1.2);
+    }
+    .option-item label {
+      flex: 1;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .submit-vote-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .submit-vote-btn:hover {
+      background: #218838;
+    }
+    .submit-vote-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+    .already-voted {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .poll-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -20,11 +73,16 @@
   </div>
   
   <h1 id="question"></h1>
-  <div id="options"></div>
+  <div id="poll-info" class="poll-info"></div>
+  <div id="vote-container" class="vote-container"></div>
+  <div id="already-voted-message" class="already-voted" style="display: none;">
+    ⚠️ Vous avez déjà voté pour ce sondage. Vous pouvez consulter les résultats.
+  </div>
 
 <script>
 const urlParams = new URLSearchParams(window.location.search);
 const id = urlParams.get('id');
+let pollData = null;
 
 function copyLink() {
   const currentUrl = window.location.href;
@@ -37,24 +95,97 @@ function viewResults() {
   window.location.href = `results.html?id=${id}`;
 }
 
+function submitVote() {
+  const selectedOptions = [];
+  
+  if (pollData.multipleChoice) {
+    // Récupérer toutes les cases cochées
+    const checkboxes = document.querySelectorAll('input[name="vote-option"]:checked');
+    checkboxes.forEach(checkbox => {
+      selectedOptions.push(parseInt(checkbox.value));
+    });
+    
+    if (selectedOptions.length === 0) {
+      alert('Veuillez sélectionner au moins une option.');
+      return;
+    }
+  } else {
+    // Récupérer le bouton radio sélectionné
+    const selectedRadio = document.querySelector('input[name="vote-option"]:checked');
+    if (!selectedRadio) {
+      alert('Veuillez sélectionner une option.');
+      return;
+    }
+    selectedOptions.push(parseInt(selectedRadio.value));
+  }
+  
+  // Envoyer le vote
+  const optionIndex = pollData.multipleChoice ? selectedOptions : selectedOptions[0];
+  
+  fetch(`http://localhost:4000/api/polls/${id}/vote`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ optionIndex })
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => Promise.reject(err));
+    }
+    return res.json();
+  })
+  .then(() => {
+    window.location.href = `results.html?id=${id}`;
+  })
+  .catch(error => {
+    alert(error.error || 'Erreur lors du vote');
+  });
+}
+
 fetch(`http://localhost:4000/api/polls/${id}`)
   .then(res => res.json())
   .then(poll => {
+    pollData = poll;
     document.getElementById('question').textContent = poll.question;
-    poll.options.forEach((opt, idx) => {
-      const btn = document.createElement('button');
-      btn.textContent = opt;
-      btn.className = 'main-btn';
-      btn.onclick = async () => {
-        await fetch(`http://localhost:4000/api/polls/${id}/vote`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ optionIndex: idx })
-        });
-        window.location.href = `results.html?id=${id}`;
-      };
-      document.getElementById('options').appendChild(btn);
-    });
+    
+    // Afficher le type de sondage
+    const pollInfoDiv = document.getElementById('poll-info');
+    pollInfoDiv.textContent = poll.multipleChoice 
+      ? '📝 Sondage à choix multiple - Vous pouvez sélectionner plusieurs options'
+      : '📝 Sondage à choix unique - Sélectionnez une seule option';
+    
+    const voteContainer = document.getElementById('vote-container');
+    const alreadyVotedMessage = document.getElementById('already-voted-message');
+    
+    if (poll.hasVoted) {
+      // L'utilisateur a déjà voté
+      alreadyVotedMessage.style.display = 'block';
+      voteContainer.style.display = 'none';
+    } else {
+      // Afficher les options de vote
+      poll.options.forEach((opt, idx) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option-item';
+        
+        const inputType = poll.multipleChoice ? 'checkbox' : 'radio';
+        optionDiv.innerHTML = `
+          <input type="${inputType}" name="vote-option" value="${idx}" id="option-${idx}">
+          <label for="option-${idx}">${opt}</label>
+        `;
+        
+        voteContainer.appendChild(optionDiv);
+      });
+      
+      // Bouton de soumission
+      const submitBtn = document.createElement('button');
+      submitBtn.className = 'submit-vote-btn';
+      submitBtn.textContent = '✅ Voter';
+      submitBtn.onclick = submitVote;
+      voteContainer.appendChild(submitBtn);
+    }
+  })
+  .catch(error => {
+    console.error('Erreur:', error);
+    alert('Erreur lors du chargement du sondage');
   });
 </script>
 </body>

@@ -29,6 +29,21 @@
       box-sizing: border-box;
     }
     
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+    }
+    
+    input[type="checkbox"] {
+      transform: scale(1.2);
+    }
+    
     .option-container {
       display: flex;
       align-items: center;
@@ -110,6 +125,13 @@
     </div>
     
     <div class="form-group">
+      <div class="checkbox-container">
+        <input type="checkbox" id="multipleChoice" name="multipleChoice">
+        <label for="multipleChoice">Autoriser le choix multiple (les utilisateurs peuvent sélectionner plusieurs options)</label>
+      </div>
+    </div>
+    
+    <div class="form-group">
       <label>Options de réponse :</label>
       <div id="options-container">
         <div class="option-container">
@@ -149,7 +171,6 @@ function addOption() {
 function removeOption(button) {
   const container = document.getElementById('options-container');
   
-  // Empêcher la suppression si il y a moins de 3 options
   if (container.children.length > 2) {
     button.parentElement.remove();
     updatePlaceholders();
@@ -169,7 +190,6 @@ function updateRemoveButtons() {
   const removeButtons = document.querySelectorAll('.remove-btn');
   const container = document.getElementById('options-container');
   
-  // Désactiver les boutons de suppression si il y a seulement 2 options
   removeButtons.forEach(button => {
     if (container.children.length <= 2) {
       button.disabled = true;
@@ -188,8 +208,8 @@ document.getElementById('pollForm').onsubmit = async (e) => {
   const data = new FormData(e.target);
   const question = data.get("question");
   const options = [...data.getAll("option")].filter(opt => opt.trim());
+  const multipleChoice = data.get("multipleChoice") === "on";
   
-  // Vérifier qu'il y a au moins 2 options
   if (options.length < 2) {
     alert('Veuillez ajouter au moins 2 options pour votre sondage.');
     return;
@@ -199,7 +219,7 @@ document.getElementById('pollForm').onsubmit = async (e) => {
     const res = await fetch('http://localhost:4000/api/polls', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, options })
+      body: JSON.stringify({ question, options, multipleChoice })
     });
     
     if (!res.ok) {
@@ -214,7 +234,6 @@ document.getElementById('pollForm').onsubmit = async (e) => {
   }
 };
 
-// Initialiser l'état des boutons au chargement
 document.addEventListener('DOMContentLoaded', updateRemoveButtons);
 </script>
 </body>
