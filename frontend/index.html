@@ -123,6 +123,44 @@
       }
     }
   </style>
+  <script src="config.js"></script>
+  <script>
+let optionCount = 2;
+
+document.getElementById('pollForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const data = new FormData(e.target);
+  const question = data.get("question");
+  const options = [...data.getAll("option")].filter(opt => opt.trim());
+  const multipleChoice = data.get("multipleChoice") === "on";
+
+  if (options.length < 2) {
+    alert('Veuillez ajouter au moins 2 options pour votre sondage.');
+    return;
+  }
+
+  try {
+    // CORRECTION: Utiliser des backticks ` au lieu de quotes ' pour l'interpolation
+    const res = await fetch(`${API_CONFIG.BASE_URL}/api/polls`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, options, multipleChoice })
+    });
+
+    if (!res.ok) {
+      throw new Error('Erreur lors de la création du sondage');
+    }
+
+    const json = await res.json();
+    window.location.href = `vote.html?id=${json.id}`;
+  } catch (error) {
+    alert('Erreur lors de la création du sondage. Veuillez réessayer.');
+    console.error('Erreur:', error);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', updateRemoveButtons);
+  </script>
 </head>
 <body>
   <div class="container">
