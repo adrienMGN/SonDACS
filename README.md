@@ -44,6 +44,7 @@ SonDACS est une application web de sondages minimalistes et anonymes. L'objectif
 ### Prérequis
 - Docker et Docker Compose installés
 - Git pour cloner le projet
+- Créer un fichier .env sur le modèle de .env.example
 
 ### Installation et lancement
 
@@ -65,10 +66,10 @@ docker compose ps
 4 services devraient apparaitre
 
 4. **Accéder à l'application**
-- Frontend : http://localhost:8088
-- API Backend : http://localhost:4000
-- MongoDB : localhost:27017
-- MongoDB Express : http://localhost:8081
+- Frontend : http://{IP}:8088 
+- API Backend : http://{IP}:4000
+- MongoDB : http://{IP}:27017
+- MongoDB Express : http://{IP}:8081
 
 ## Déploiement 
 
@@ -102,7 +103,7 @@ docker compose up -d
 ## Comment utiliser l'application
 
 ### Créer un sondage
-1. Rendez-vous sur http://localhost:8088
+1. Rendez-vous sur http://{IP}:8088
 2. Cliquez sur "Créer un sondage"
 3. Saisissez votre question
 4. Ajoutez vos options de réponse (minimum 2)
