@@ -131,10 +131,45 @@
     let pollData = null;
 
     function copyLink() {
+      // Utiliser l'URL complète actuelle
       const currentUrl = window.location.href;
-      navigator.clipboard.writeText(currentUrl).then(() => {
-        alert('Lien copié dans le presse-papiers !');
-      });
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(currentUrl).then(() => {
+          alert('Lien copié dans le presse-papiers !');
+        }).catch(() => {
+          // Fallback si clipboard API échoue
+          fallbackCopyTextToClipboard(currentUrl);
+        });
+      } else {
+        // Fallback pour les navigateurs plus anciens
+        fallbackCopyTextToClipboard(currentUrl);
+      }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          alert('Lien copié dans le presse-papiers !');
+        } else {
+          alert('Impossible de copier le lien automatiquement. URL: ' + text);
+        }
+      } catch (err) {
+        alert('Impossible de copier le lien automatiquement. URL: ' + text);
+      }
+      
+      document.body.removeChild(textArea);
     }
 
     function viewResults() {

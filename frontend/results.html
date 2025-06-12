@@ -55,10 +55,44 @@
     const id = urlParams.get('id');
 
     function copyVoteLink() {
-      const voteUrl = `${window.location.origin}/vote.html?id=${id}`;
-      navigator.clipboard.writeText(voteUrl).then(() => {
-        alert('Lien de vote copié dans le presse-papiers !');
-      });
+      // Construire l'URL de vote en remplaçant results.html par vote.html
+      const currentUrl = window.location.href;
+      const voteUrl = currentUrl.replace('results.html', 'vote.html');
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(voteUrl).then(() => {
+          alert('Lien de vote copié dans le presse-papiers !');
+        }).catch(() => {
+          fallbackCopyTextToClipboard(voteUrl);
+        });
+      } else {
+        fallbackCopyTextToClipboard(voteUrl);
+      }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.top = "0";
+      textArea.style.left = "0";
+      textArea.style.position = "fixed";
+      
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          alert('Lien de vote copié dans le presse-papiers !');
+        } else {
+          alert('Impossible de copier le lien automatiquement. URL: ' + text);
+        }
+      } catch (err) {
+        alert('Impossible de copier le lien automatiquement. URL: ' + text);
+      }
+      
+      document.body.removeChild(textArea);
     }
 
     function backToVote() {
