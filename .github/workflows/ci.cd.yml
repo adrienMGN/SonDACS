@@ -1,0 +1,36 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name:  Valide Docker-Compose.yml
+      run: |
+        docker-compose config --quiet
+    
+    - name: Docker Build
+      run: |
+        echo "docker compose build en cours..."
+        docker-compose build --no-cache
+        
+        echo "docker compose build OK"
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        echo "Clearlag"
+        docker-compose down --volumes --remove-orphans || true
+        docker system prune -f || true
