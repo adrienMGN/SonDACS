@@ -70,6 +70,24 @@ docker compose ps
 - MongoDB : localhost:27017
 - MongoDB Express : http://localhost:8081
 
+## Déploiement 
+
+SonDACS est déployer sur docketu.iutnc.univ-lorraine.fr pour des raisons techniques.
+En effet, l'application nécessite une base de donnée mongoDB et les services tel que MongoAtlas ne sont pas gratuit. ![alt text](image.png) C'est pour ces raisons techniques et financiaires que le site est déployé sur docketu. SonDACS est donc uniquement accessible via un VPN ou une connexion sur le réseau de l'université. 
+
+Le déploiement sur docketu est relativement simple, il suffit de se ssh sur la machine :
+ssh login@docketu.iutnc.univ-lorraine
+y déposer les fichiers sources : sudo scp -r ../SAE_Advenced_Deployment login@docketu.iutnc.univ-lorraine.fr:~/  
+puis de lancer le docker compose de puis la machine : 
+ssh login@docketu.iutnc.univ-lorraine
+cd SAE_Advenced_Deployment
+docker compose up --build -d 
+
+SonDACS est accessible à l'adresse suivante :
+http://docketu.iutnc.univ-lorraine.fr:8088/
+
+ Ce déploiement à nécessité de revoir les routes API de SonDACS qui utilisait un hostname localhost. De plus il a fallu s'assurer que chaque port utilisé pour SonDACS était bien libre sur la machine docketu.
+
 ### Arrêter l'application
 ```bash
 docker compose down
