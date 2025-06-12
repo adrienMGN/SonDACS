@@ -1,0 +1,10 @@
+```
+.env
+node_modules/
+.DS_Store
+*.log
+secrets/
+nginx.conf
+docker-compose.yml
+Dockerfile
+```

@@ -1,0 +1,13 @@
+{
+  "deploy": {
+    "restartPolicyType": "ON_FAILURE",
+    "cronSchedule": null
+  },
+  "environments": {
+    "production": {
+      "variables": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
