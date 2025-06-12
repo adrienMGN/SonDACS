@@ -19,12 +19,12 @@ jobs:
     
     - name:  Valide Docker-Compose.yml
       run: |
-        docker-compose config --quiet
+        docker compose config --quiet
     
     - name: Docker Build
       run: |
         echo "docker compose build en cours..."
-        docker-compose build --no-cache
+        docker compose build --no-cache
         
         echo "docker compose build OK"
     
@@ -32,5 +32,5 @@ jobs:
       if: always()
       run: |
         echo "Clearlag"
-        docker-compose down --volumes --remove-orphans || true
+        docker compose down --volumes --remove-orphans || true
         docker system prune -f || true
