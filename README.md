@@ -1,5 +1,20 @@
-### SonDACS
-# DENIS Oscar et MANGIN Adrien
+# SonDACS
+
+Face au besoin d’obtenir rapidement un retour d’opinion anonyme lors d’événements
+ou en milieu associatif, nous avons imaginé SonDACS, une plateforme de mini-sondages
+instantanés et anonymes, utilisable sans création de compte. L’utilisateur peut créer,
+partager et consulter les résultats d’un sondage en quelques clics, sans aucune barrière
+d’inscription.
+
+SonDACS est une plateforme de mini-sondages instantanés anonymes utilisable sans
+créer de compte. Le frontend est vanilla (HTML/CSS/JS), le backend en Node.js et la
+base de données en MongoDB. Une librairie permet d’afficher les résultats d’un sondage
+sous forme de graphique, et le service est déployé sur un VPS ou en utilisant Railway.
+Le service est utile dans des contextes associatifs, événementiels ou même profession-
+nels (dans les entreprises en interne). Il peut également être public et utilisable par tous,
+et subsister sur des revenus publicitaires, ce qui en fait une solution soit B2B, soit B2B2C.
+
+### DENIS Oscar et MANGIN Adrien
 # Dacs S4 2024-2025
 
 
